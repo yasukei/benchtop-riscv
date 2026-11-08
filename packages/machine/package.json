@@ -1,0 +1,27 @@
+{
+  "name": "@benchtop-riscv/machine",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Boards that wire a hart, devices and loaders together.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "@benchtop-riscv/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@benchtop-riscv/core": "workspace:*",
+    "@benchtop-riscv/elf": "workspace:*",
+    "@benchtop-riscv/riscv": "workspace:*",
+    "@benchtop-riscv/devices": "workspace:*"
+  }
+}
