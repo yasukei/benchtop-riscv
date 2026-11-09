@@ -1,0 +1,36 @@
+{
+  "name": "@benchtop-riscv/web",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Browser UI; hosts the machine in a Web Worker.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "@benchtop-riscv/source": "./src/index.ts",
+      "types": "./dist/lib/index.d.ts",
+      "default": "./dist/lib/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && vite build",
+    "build:pages": "vite build --base /benchtop-riscv/ --outDir dist/pages --emptyOutDir",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.tools.json",
+    "dev": "vite --host 0.0.0.0",
+    "preview": "vite preview",
+    "preview:pages": "vite preview --base /benchtop-riscv/ --outDir dist/pages"
+  },
+  "dependencies": {
+    "@benchtop-riscv/core": "workspace:*",
+    "@benchtop-riscv/machine": "workspace:*",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "vite": "^8.3.4"
+  }
+}

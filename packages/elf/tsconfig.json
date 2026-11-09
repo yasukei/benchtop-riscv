@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // No "DOM" (and no @types/node): this package must run in Node and in a Web Worker.
+    // Host APIs such as console, setTimeout or TextEncoder are therefore not declared
+    // either; inject what you need instead of adding "DOM" here.
+    "lib": ["ES2023"]
+  },
+  "include": ["src"]
+}

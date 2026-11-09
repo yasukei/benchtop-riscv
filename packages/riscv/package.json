@@ -1,0 +1,24 @@
+{
+  "name": "@benchtop-riscv/riscv",
+  "version": "0.0.0",
+  "private": true,
+  "description": "RISC-V hart: decoder, executor, CSRs, traps, privilege modes, MMU, disassembler.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "@benchtop-riscv/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@benchtop-riscv/core": "workspace:*"
+  }
+}
