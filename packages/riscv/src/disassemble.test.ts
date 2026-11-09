@@ -70,6 +70,23 @@ describe("disassemble", () => {
     expect(disassemble(word)).toBe(expected);
   });
 
+  // Confirmed using GNU objdump 2.40-2+4+b1 in the fixture build's pinned
+  // Debian image and snapshot: objdump -D -b binary -m riscv:rv32 probe.bin.
+  it.each([
+    [0xc0002573, "rdcycle\ta0"],
+    [0xc0102573, "rdtime\ta0"],
+    [0xc0202573, "rdinstret\ta0"],
+    [0xc8002573, "rdcycleh\ta0"],
+    [0xc8102573, "rdtimeh\ta0"],
+    [0xc8202573, "rdinstreth\ta0"],
+    [0xc0002073, "rdcycle\tzero"],
+    [0xc00025f3, "rdcycle\ta1"],
+    [0xc000a573, "csrrs\ta0,cycle,ra"],
+    [0xb0002573, "csrr\ta0,mcycle"],
+  ] as const)("formats counter access %i like objdump 2.40", (word, expected) => {
+    expect(disassemble(word)).toBe(expected);
+  });
+
   it("wraps absolute jump and branch targets to the RV32 address space", () => {
     expect(disassemble(0xffdff56f, 0)).toBe("jal\ta0,fffffffc");
     expect(disassemble(0x0040006f, 0xfffffffc)).toBe("j\t0");

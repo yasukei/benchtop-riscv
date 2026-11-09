@@ -188,6 +188,12 @@ export function disassemble(word: number, pc?: number): string {
       const source = "rs1" in i ? reg(i.rs1) : `${i.imm}`;
       const sourceIndex = "rs1" in i ? i.rs1 : i.imm;
       if ((i.op === "csrrs" || i.op === "csrrsi") && sourceIndex === 0) {
+        if (
+          i.op === "csrrs" &&
+          ((i.csr >= 0xc00 && i.csr <= 0xc02) || (i.csr >= 0xc80 && i.csr <= 0xc82))
+        ) {
+          return `rd${csr}\t${reg(i.rd)}`;
+        }
         return `csrr\t${reg(i.rd)},${csr}`;
       }
       if (i.rd === 0) {
