@@ -19,8 +19,10 @@ export interface RamWindow {
 }
 
 /**
- * The physical address space seen by a hart. An access that no device decodes throws
- * {@link BusError}; the hart turns it into an access-fault trap.
+ * The physical address space seen by a hart. Addresses are unsigned 32-bit integers
+ * (`>>> 0`); any other number is not decoded and throws {@link BusError}.
+ * An access that no device decodes also throws {@link BusError}; the hart turns it into
+ * an access-fault trap.
  */
 export interface Bus {
   load(address: number, size: AccessSize): number;
