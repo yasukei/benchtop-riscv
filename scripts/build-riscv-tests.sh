@@ -100,8 +100,9 @@ MAKE
   read -r -a tests < /tmp/tests
   (( ${#tests[@]} > 0 ))
   dumps=("${tests[@]/%/.dump}")
+  # Stable intermediate object names also stabilize STT_FILE symbol table entries.
   make --no-print-directory XLEN=32 RISCV_PREFIX=riscv64-unknown-elf- \
-    'RISCV_GCC_OPTS=-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -march=rv32g_zicsr_zifencei -mabi=ilp32 -Wl,--build-id=none' \
+    'RISCV_GCC_OPTS=-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -march=rv32g_zicsr_zifencei -mabi=ilp32 -save-temps=obj -Wl,--build-id=none' \
     "${dumps[@]}"
   cp "${tests[@]}" "${dumps[@]}" /fixtures/
 done
@@ -158,12 +159,14 @@ appended, expanded from the copied upstream \`*.Makefrag\` files):
 
 \`\`\`sh
 make --no-print-directory XLEN=32 RISCV_PREFIX=riscv64-unknown-elf- \\
-  'RISCV_GCC_OPTS=-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -march=rv32g_zicsr_zifencei -mabi=ilp32 -Wl,--build-id=none' \\
+  'RISCV_GCC_OPTS=-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -march=rv32g_zicsr_zifencei -mabi=ilp32 -save-temps=obj -Wl,--build-id=none' \\
   TARGETS
 \`\`\`
 
 \`SOURCE_DATE_EPOCH\` is the upstream commit timestamp, \`LC_ALL=C\`, \`TZ=UTC\`.
-Linker build IDs are disabled. ELF and dump content has no host paths or timestamps.
+Linker build IDs are disabled. \`-save-temps=obj\` gives intermediate objects stable
+names, preventing random GCC temporary filenames in the ELF symbol table while
+retaining symbols. ELF and dump content has no host paths or timestamps.
 
 The pinned \`rv32ui-p\` list **includes \`ma_data\`**, which performs misaligned
 accesses. Execution support and the conformance runner are separate work.
