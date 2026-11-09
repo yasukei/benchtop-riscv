@@ -36,7 +36,9 @@ export default {
     {
       name: "not-to-unresolvable",
       severity: "error",
-      comment: "Imports must resolve. A workspace package must be listed in package.json.",
+      // Undeclared workspace imports still resolve through the root node_modules; that every
+      // package declares what it imports is checked by tests/tooling/workspace-dependencies.test.ts.
+      comment: "Imports must resolve.",
       from: {},
       to: { couldNotResolve: true },
     },
