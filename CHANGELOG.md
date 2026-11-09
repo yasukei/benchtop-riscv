@@ -10,6 +10,7 @@ Until 1.0.0, any release may break compatibility.
 
 ### Added
 
+- HTIF polling of bare-metal program results in RAM.
 - RV32I hart execution with bounded instruction slices and direct RAM access.
 - RV32I, Zicsr and Zifencei instruction decoding and GNU objdump-style disassembly.
 - ELF32 RISC-V executable parsing with loadable segments, entry point and symbol lookup.
