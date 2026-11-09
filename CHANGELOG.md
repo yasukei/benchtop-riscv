@@ -11,7 +11,6 @@ Until 1.0.0, any release may break compatibility.
 ### Added
 
 - Physical address bus and little-endian RAM with a direct-access window for the hart.
-
 - Web app shell that starts the machine Worker and shows its connection status.
 
 [Unreleased]: https://github.com/yasukei/benchtop-riscv/commits/main
