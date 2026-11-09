@@ -11,7 +11,6 @@ Until 1.0.0, any release may break compatibility.
 ### Added
 
 - Machine-mode CSRs, synchronous traps and M/U privilege switching with `mret`.
-
 - HTIF polling of bare-metal program results in RAM.
 - RV32I hart execution with bounded instruction slices and direct RAM access.
 - RV32I, Zicsr and Zifencei instruction decoding and GNU objdump-style disassembly.
