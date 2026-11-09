@@ -58,12 +58,18 @@ describe("disassemble", () => {
     [0x30059073, "csrw\tmstatus,a1"],
     [0x3005a073, "csrs\tmstatus,a1"],
     [0x3005b073, "csrc\tmstatus,a1"],
-    [0xfffdd573, "csrrwi\ta0,0xfff,27"],
-    [0xfffde573, "csrrsi\ta0,0xfff,27"],
-    [0xfffdf573, "csrrci\ta0,0xfff,27"],
+    [0xfffdd573, "csrrw\ta0,0xfff,27"],
+    [0xfffde573, "csrrs\ta0,0xfff,27"],
+    [0xfffdf573, "csrrc\ta0,0xfff,27"],
     [0x3005e073, "csrs\tmstatus,11"],
     [0x3005f073, "csrc\tmstatus,11"],
-    [0x30006573, "csrr\ta0,mstatus"],
+    // GNU objdump 2.40 uses a numeric source for CSR-immediate instructions.
+    // Only a register source of x0 can select csrr or a counter-read alias.
+    [0x30006573, "csrrs\ta0,mstatus,0"],
+    [0x30006073, "csrs\tmstatus,0"],
+    [0xc0006573, "csrrs\ta0,cycle,0"],
+    [0x30002573, "csrr\ta0,mstatus"],
+    [0x30002073, "csrr\tzero,mstatus"],
     [0x00000000, ".4byte\t0x0"],
     [-1, ".4byte\t0xffffffff"],
   ] as const)("formats word %i", (word, expected) => {

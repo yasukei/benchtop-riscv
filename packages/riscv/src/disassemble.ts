@@ -186,12 +186,8 @@ export function disassemble(word: number, pc?: number): string {
       if (i.op === "csrrw" && i.rd === 0 && i.rs1 === 0 && i.csr === 0xc00) return "unimp";
       const csr = csrNames[i.csr] ?? `0x${hex(i.csr)}`;
       const source = "rs1" in i ? reg(i.rs1) : `${i.imm}`;
-      const sourceIndex = "rs1" in i ? i.rs1 : i.imm;
-      if ((i.op === "csrrs" || i.op === "csrrsi") && sourceIndex === 0) {
-        if (
-          i.op === "csrrs" &&
-          ((i.csr >= 0xc00 && i.csr <= 0xc02) || (i.csr >= 0xc80 && i.csr <= 0xc82))
-        ) {
+      if (i.op === "csrrs" && i.rs1 === 0) {
+        if ((i.csr >= 0xc00 && i.csr <= 0xc02) || (i.csr >= 0xc80 && i.csr <= 0xc82)) {
           return `rd${csr}\t${reg(i.rd)}`;
         }
         return `csrr\t${reg(i.rd)},${csr}`;
@@ -207,7 +203,9 @@ export function disassemble(word: number, pc?: number): string {
         }[i.op];
         return `${alias}\t${csr},${source}`;
       }
-      return `${i.op}\t${reg(i.rd)},${csr},${source}`;
+      // GNU objdump 2.40 overloads the register mnemonics for immediate CSR sources.
+      const mnemonic = "imm" in i ? i.op.slice(0, -1) : i.op;
+      return `${mnemonic}\t${reg(i.rd)},${csr},${source}`;
     }
   }
 }
