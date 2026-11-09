@@ -26,6 +26,8 @@ const objdumpTable = [
   ["jalr", 0x8000019c, 0x000302e7, "jalr\tt0,t1"],
   ["jalr", 0x80000258, 0xffc30067, "jr\t-4(t1)"],
   ["add", 0x8000069c, 0xc0001073, "unimp"],
+  ["lw", 0x8000200c, 0xf00ff00f, ".4byte\t0xf00ff00f"],
+  ["lh", 0x80002006, 0x0000f00f, ".4byte\t0xf00f"],
   ["jal", 0x80000194, 0x0100026f, "jal\ttp,800001a4"],
 ] as const;
 

@@ -64,8 +64,8 @@ describe("disassemble", () => {
     [0x3005e073, "csrs\tmstatus,11"],
     [0x3005f073, "csrc\tmstatus,11"],
     [0x30006573, "csrr\ta0,mstatus"],
-    [0x00000000, ".word\t0x00000000"],
-    [-1, ".word\t0xffffffff"],
+    [0x00000000, ".4byte\t0x0"],
+    [-1, ".4byte\t0xffffffff"],
   ] as const)("formats word %i", (word, expected) => {
     expect(disassemble(word)).toBe(expected);
   });

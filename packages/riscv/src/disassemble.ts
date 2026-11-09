@@ -87,7 +87,7 @@ export function disassemble(word: number, pc?: number): string {
   const target = (offset: number): string => (pc === undefined ? `${offset}` : hex(pc + offset));
   switch (i.op) {
     case "illegal":
-      return `.word\t0x${hex(i.word).padStart(8, "0")}`;
+      return `.4byte\t0x${hex(i.word)}`;
     case "lui":
     case "auipc":
       return `${i.op}\t${reg(i.rd)},0x${hex(i.imm >>> 12)}`;
