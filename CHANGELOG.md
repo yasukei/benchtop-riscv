@@ -10,6 +10,8 @@ Until 1.0.0, any release may break compatibility.
 
 ### Added
 
+- RV32I hart execution with bounded instruction slices and direct RAM access.
+
 - RV32I, Zicsr and Zifencei instruction decoding and GNU objdump-style disassembly.
 - ELF32 RISC-V executable parsing with loadable segments, entry point and symbol lookup.
 - Physical address bus and little-endian RAM with a direct-access window for the hart.

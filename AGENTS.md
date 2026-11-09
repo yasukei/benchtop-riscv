@@ -68,6 +68,7 @@ its absolute executable path.
 
 - New behavior needs a test in the same PR.
 - Instruction semantics: unit tests next to the implementation in `packages/riscv/src/`.
+- Hart/device integration: tests under `tests/integration/` use real devices.
 - Whole-program behavior: a case under `tests/conformance/` (e.g. riscv-tests suites).
 - Guest binaries live in `tests/fixtures/` with their source, revision, license and the
   script that regenerates them (ADR 0005). Never commit a binary without that record.
