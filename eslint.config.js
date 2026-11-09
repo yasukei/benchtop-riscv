@@ -14,6 +14,7 @@ const clockMessage = "Emulator packages must not read the host clock; see ADR 00
 export default defineConfig(
   {
     ignores: [
+      ".claude/",
       "**/dist/",
       "**/coverage/",
       "**/node_modules/",
