@@ -1,0 +1,4 @@
+binutils-riscv64-unknown-elf 2.40-2+4+b1
+gcc-riscv64-unknown-elf 12.2.0-14+deb12u1+11+b2
+riscv64-unknown-elf-gcc (12.2.0-14+deb12u1+11+b2) 12.2.0
+GNU objdump (2.40-2+4+b1) 2.40
