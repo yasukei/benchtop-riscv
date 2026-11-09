@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Hart } from "./index.js";
 import { encodeB, encodeI, encodeJ, encodeR, encodeS, encodeU } from "./encoding.test-support.js";
-import { FakeBus, program } from "./hart.test-support.js";
+import { FakeBus, program, readTrapState } from "./hart.test-support.js";
 
 const addi = (rd: number, rs1: number, imm: number) => encodeI(0x13, 0, rd, rs1, imm);
 
@@ -182,9 +182,6 @@ describe("hart control and faults", () => {
     ["illegal", 0xffffffff],
     ["ecall", 0x00000073],
     ["ebreak", 0x00100073],
-    ["mret", 0x30200073],
-    ["wfi", 0x10500073],
-    ["CSR", 0x300110f3],
     ["reserved JALR", encodeI(0x67, 1, 1, 0, 0)],
     ["reserved branch", encodeB(2, 0, 0, 4)],
     ["reserved load", encodeI(3, 3, 1, 0, 0)],
@@ -197,19 +194,32 @@ describe("hart control and faults", () => {
     ["misaligned JAL", encodeJ(1, 2)],
     ["misaligned JALR", encodeI(0x67, 0, 1, 0, 3)],
     ["misaligned branch", encodeB(0, 0, 0, 2)],
-  ] as const)("stops on %s without retiring or committing state", (_name, word) => {
-    const { hart } = program([addi(1, 0, 7), word, addi(1, 0, 9)]);
+  ] as const)("traps on %s without retiring or committing integer state", (_name, word) => {
+    const { hart, bus } = program([addi(1, 0, 7), word, addi(1, 0, 9)]);
     expect(hart.run(1).kind).toBe("budget");
     expect(hart.run(0).kind).toBe("budget");
-    for (let retry = 0; retry < 2; retry++) {
-      expect(hart.run(10)).toMatchObject({
-        kind: "fatal",
-        message: expect.stringContaining("0x00001004"),
-      });
-      expect(hart.pc).toBe(0x1004);
-      expect(hart.instret).toBe(1);
-      expect(hart.x[1]).toBe(7);
-    }
+    expect(hart.step()).toEqual({ kind: "budget" });
+    expect(hart.pc).toBe(0);
+    expect(hart.instret).toBe(1);
+    expect(hart.x[1]).toBe(7);
+    const cause =
+      _name === "ecall" ? 11 : _name === "ebreak" ? 3 : _name.startsWith("misaligned") ? 0 : 2;
+    const mtval =
+      cause === 11
+        ? 0
+        : cause === 3
+          ? 0x1004
+          : cause === 0
+            ? _name === "misaligned JALR"
+              ? 2
+              : 0x1006
+            : word;
+    expect(readTrapState(hart, bus)).toEqual({
+      mepc: 0x1004,
+      mcause: cause,
+      mtval,
+      mstatus: 0x1800,
+    });
   });
 
   it("does not check the target of an untaken branch", () => {
@@ -233,25 +243,37 @@ describe("hart control and faults", () => {
         access === "store"
           ? encodeS(2, 1, 2, 0)
           : encodeI(3, 2, access === "load to x0" ? 0 : 2, 1, 0);
-      const { hart } = program([word]);
+      const { hart, bus } = program([word]);
       hart.x[1] = 0x2000;
       hart.x[2] = 42;
       if (access === "fetch") hart.pc = 0x2000;
       const pc = hart.pc;
-      expect(hart.step()).toMatchObject({ kind: "fatal", message: expect.stringContaining("Bus") });
-      expect(hart.pc).toBe(pc);
+      expect(hart.step()).toEqual({ kind: "budget" });
+      expect(hart.pc).toBe(0);
       expect(hart.x[2]).toBe(42);
       expect(hart.instret).toBe(0);
+      expect(readTrapState(hart, bus)).toEqual({
+        mepc: pc,
+        mcause: access === "fetch" ? 1 : access === "store" ? 7 : 5,
+        mtval: 0x2000,
+        mstatus: 0x1800,
+      });
     },
   );
 
   it("rejects a misaligned fetch without touching the bus", () => {
     const { hart, bus } = program([]);
     hart.pc = 0x1002;
-    expect(hart.run(1).kind).toBe("fatal");
-    expect(hart.pc).toBe(0x1002);
+    expect(hart.run(1).kind).toBe("budget");
+    expect(hart.pc).toBe(0);
     expect(hart.instret).toBe(0);
     expect(bus.loads).toEqual([]);
+    expect(readTrapState(hart, bus)).toEqual({
+      mepc: 0x1000,
+      mcause: 0,
+      mtval: 0x1002,
+      mstatus: 0x1800,
+    });
   });
 
   it.each([2, 4] as const)("routes a %i-byte load crossing the RAM window to the bus", (size) => {
@@ -290,11 +312,17 @@ describe("hart control and faults", () => {
     );
     hart.x[1] = 0x11ff;
     hart.x[2] = -1;
-    expect(hart.run(2).kind).toBe("fatal");
+    expect(hart.step().kind).toBe("budget");
     expect(hart.instret).toBe(0);
-    expect(hart.pc).toBe(0x1000);
+    expect(hart.pc).toBe(0);
     expect(bus.bytes[511]).toBe(0);
     expect(access === "load" ? bus.loads : bus.stores).toHaveLength(1);
+    expect(readTrapState(hart, bus)).toEqual({
+      mepc: 0x1000,
+      mcause: access === "load" ? 5 : 7,
+      mtval: 0x11ff,
+      mstatus: 0x1800,
+    });
   });
 
   it("wraps the PC and AUIPC result at the 32-bit boundary", () => {
@@ -310,7 +338,7 @@ describe("hart control and faults", () => {
   it("wraps effective addresses before bus access", () => {
     const { hart, bus } = program([encodeI(3, 4, 2, 1, 1)]);
     hart.x[1] = -1;
-    expect(hart.step().kind).toBe("fatal");
+    expect(hart.step().kind).toBe("budget");
     expect(bus.loads).toEqual([{ address: 0, size: 1 }]);
   });
 
