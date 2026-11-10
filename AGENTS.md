@@ -25,6 +25,8 @@ Design decisions are recorded in `docs/adr/` (overview: `docs/architecture.md`).
 - `pnpm install` – install workspace dependencies; use `--frozen-lockfile` to match CI
 - `pnpm dev` – start the web app
 - `pnpm build` – build every package
+- `pnpm run:elf <file> [--max-instructions <n>]` – build machine dependencies and run an ELF
+  in Node; the default budget is 100,000,000 instruction attempts
 - `pnpm --filter @benchtop-riscv/web build:pages` – build the web app for GitHub Pages
 - `pnpm typecheck` – check TypeScript in strict mode
 - `pnpm lint` – ESLint, dependency direction (dependency-cruiser), Prettier check

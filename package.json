@@ -12,6 +12,7 @@
   "scripts": {
     "dev": "pnpm --filter @benchtop-riscv/web dev",
     "build": "pnpm -r build",
+    "run:elf": "pnpm --filter \"@benchtop-riscv/machine...\" build && node scripts/run-elf.ts",
     "typecheck": "tsc -p tsconfig.json && pnpm -r typecheck",
     "lint": "eslint . && depcruise packages tests && prettier --check .",
     "format": "prettier --write .",
