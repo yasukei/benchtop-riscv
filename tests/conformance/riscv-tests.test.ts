@@ -12,9 +12,15 @@ const fixtures = readdirSync(fixtureDirectory, { withFileTypes: true })
   .map((entry) => entry.name)
   .sort();
 const instructionBudget = 1_000_000; // Instruction attempts, including traps; not instret.
+// env/p other_exception writes TESTNUM | 1337; HTIF shifts that value right by one.
+// The pinned rv32ui-p tests use TESTNUM <= 128, so ordinary failures cannot match.
+const otherExceptionMask = 1337 >>> 1;
 
 function failureMessage(stop: StopReason, pc: number, elf: ElfFile): string {
   if (stop.kind === "halt") {
+    if ((stop.exitCode & otherExceptionMask) === otherExceptionMask) {
+      return `Unexpected trap (riscv-tests other_exception; HTIF exit code ${stop.exitCode})`;
+    }
     return `Failed test number ${stop.exitCode} (HTIF exit code ${stop.exitCode})`;
   }
   const segment = elf.segments.find(
@@ -60,9 +66,40 @@ describe("rv32ui-p riscv-tests", () => {
 describe("riscv-tests failure diagnostics", () => {
   const elf = parseElf(readFileSync(new URL("rv32ui-p-add", fixtureDirectory)));
 
-  it("reports the failing guest test number", () => {
-    expect(failureMessage({ kind: "halt", exitCode: 17 }, elf.entry, elf)).toContain(
-      "Failed test number 17 (HTIF exit code 17)",
+  it.each([3, 17, 128])("reports the failing guest test number %i", (exitCode) => {
+    expect(failureMessage({ kind: "halt", exitCode }, elf.entry, elf)).toBe(
+      `Failed test number ${exitCode} (HTIF exit code ${exitCode})`,
+    );
+  });
+
+  it.each([668, 669, 732])(
+    "reports other_exception exit code %i as an unexpected trap",
+    (exitCode) => {
+      expect(failureMessage({ kind: "halt", exitCode }, elf.entry, elf)).toBe(
+        `Unexpected trap (riscv-tests other_exception; HTIF exit code ${exitCode})`,
+      );
+    },
+  );
+
+  it("reports an illegal instruction in a guest as an unexpected trap", () => {
+    // Patch a fresh in-memory copy of test_3's add; leave the committed fixture intact.
+    const patchedElf = parseElf(readFileSync(new URL("rv32ui-p-add", fixtureDirectory)));
+    const pc = 0x8000_01b0;
+    const segment = patchedElf.segments.find(
+      (segment) => pc >= segment.paddr && pc + 4 <= segment.paddr + segment.fileBytes.length,
+    )!;
+    const bytes = segment.fileBytes;
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    const offset = pc - segment.paddr;
+    expect(view.getUint32(offset, true)).toBe(0x00c5_8733); // add a4,a1,a2
+    view.setUint32(offset, 0, true); // Illegal instruction.
+
+    const board = createTestBoard();
+    board.load(patchedElf);
+    const stop = board.run(instructionBudget);
+    expect(stop).toEqual({ kind: "halt", exitCode: 669 });
+    expect(failureMessage(stop, board.hart.pc, patchedElf)).toBe(
+      "Unexpected trap (riscv-tests other_exception; HTIF exit code 669)",
     );
   });
 
