@@ -25,6 +25,8 @@ export class LoadError extends Error {
 export interface TestBoard {
   readonly hart: Hart;
   load(elf: ElfFile): void;
+  /** Inspect an aligned RAM word; undefined if the address is unreadable. */
+  readWord(address: number): number | undefined;
   /** Counts instruction attempts, including traps that do not retire an instruction. */
   run(budget: number): StopReason;
 }
@@ -88,6 +90,18 @@ class TestBoardImpl implements TestBoard {
     }
     this.hart.reset(elf.entry);
     this.htif = htif;
+  }
+
+  readWord(address: number): number | undefined {
+    if (
+      !Number.isInteger(address) ||
+      (address & 3) !== 0 ||
+      address < ramBase ||
+      address + 4 > ramBase + this.ram.size
+    ) {
+      return undefined;
+    }
+    return this.ram.load(address - ramBase, 4);
   }
 
   run(budget: number): StopReason {

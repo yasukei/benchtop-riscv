@@ -169,6 +169,25 @@ describe("test board ELF loading", () => {
   });
 });
 
+describe("test board memory inspection", () => {
+  it("reads unsigned little-endian words, including guest writes and zero-filled RAM", () => {
+    const board = createTestBoard({ ramSize: 512 });
+    board.load(makeElf({ words: resultProgram(7) }));
+    expect(board.readWord(base)).toBe(0x800000b7);
+    expect(board.readWord(base + 0x100)).toBe(0);
+    board.run(3);
+    expect(board.readWord(base + 0x100)).toBe(7);
+    expect(board.readWord(base + 508)).toBe(0);
+  });
+
+  it.each([base - 4, base + 1, base + 510, base + 512, 0x1_8000_0000, NaN, Infinity, base + 0.5])(
+    "returns undefined for an unreadable word address: %s",
+    (address) => {
+      expect(createTestBoard({ ramSize: 512 }).readWord(address)).toBeUndefined();
+    },
+  );
+});
+
 describe("test board execution", () => {
   it("halts a guest that reports success then loops", () => {
     const board = createTestBoard({ ramSize: 512 });
