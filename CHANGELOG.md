@@ -10,6 +10,7 @@ Until 1.0.0, any release may break compatibility.
 
 ### Added
 
+- Test board with ELF loading, RAM and hart reset, and bounded HTIF result polling.
 - Machine-mode CSRs, synchronous traps and M/U privilege switching with `mret`.
 - HTIF polling of bare-metal program results in RAM.
 - RV32I hart execution with bounded instruction slices and direct RAM access.
