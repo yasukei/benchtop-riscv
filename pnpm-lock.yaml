@@ -103,6 +103,9 @@ importers:
       '@benchtop-riscv/core':
         specifier: workspace:*
         version: link:../core
+      '@benchtop-riscv/elf':
+        specifier: workspace:*
+        version: link:../elf
       '@benchtop-riscv/machine':
         specifier: workspace:*
         version: link:../machine

@@ -10,7 +10,8 @@ export function nextConnection(current: Connection, event: ClientEvent): Connect
       return { state: "ready", isa: event.isa };
     case "connectionError":
       return { state: "error" };
-    default:
+    case "state":
+    case "loadError":
       return current;
   }
 }

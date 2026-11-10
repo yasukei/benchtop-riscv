@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@benchtop-riscv/core": "workspace:*",
+    "@benchtop-riscv/elf": "workspace:*",
     "@benchtop-riscv/machine": "workspace:*",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
