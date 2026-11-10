@@ -2,7 +2,7 @@ import type { MachineToUiMessage, UiToMachineMessage } from "@benchtop-riscv/cor
 
 /** The small Worker surface used by the client, also implemented by test doubles. */
 export interface MachineWorker {
-  postMessage(message: UiToMachineMessage): void;
+  postMessage(message: UiToMachineMessage, transfer?: Transferable[]): void;
   addEventListener(type: "message" | "error" | "messageerror", listener: EventListener): void;
   removeEventListener(type: "message" | "error" | "messageerror", listener: EventListener): void;
   terminate(): void;
@@ -34,7 +34,11 @@ export class MachineClient {
   }
 
   send(message: UiToMachineMessage): void {
-    this.worker.postMessage(message);
+    if (message.type === "load") {
+      this.worker.postMessage(message, [message.image]);
+    } else {
+      this.worker.postMessage(message);
+    }
   }
 
   close(): void {

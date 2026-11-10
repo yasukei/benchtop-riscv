@@ -10,6 +10,7 @@ Until 1.0.0, any release may break compatibility.
 
 ### Added
 
+- Machine Worker ELF loading, run/pause/step/reset commands and throttled execution snapshots.
 - Node CLI runner for bare-metal ELFs with HTIF exit status, instruction limits and final PC disassembly.
 - Documented passing RV32I conformance against all 42 pinned `rv32ui-p` riscv-tests.
 - Test board with ELF loading, RAM and hart reset, and bounded HTIF result polling.
