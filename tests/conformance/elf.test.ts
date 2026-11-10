@@ -7,7 +7,7 @@ describe("riscv-tests ELF loading metadata", () => {
     const bytes = readFileSync(new URL("../fixtures/riscv-tests/rv32ui-p-add", import.meta.url));
     const file = parseElf(bytes);
     expect(file.entry).toBe(0x8000_0000);
-    expect(file.segments.length).toBeGreaterThan(0);
+    expect(file.segments).toHaveLength(2);
     const tohost = findSymbol(file, "tohost");
     expect(tohost).toMatchObject({
       name: "tohost",

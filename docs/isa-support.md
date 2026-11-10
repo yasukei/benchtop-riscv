@@ -4,6 +4,19 @@ The hart executes RV32I, Zicsr and `fence.i` (Zifencei), with minimal M-mode
 and U-mode privilege support. Reset starts in M-mode. S-mode, interrupts, PMP,
 address translation and counter CSRs are not implemented yet.
 
+## Conformance
+
+All 42 committed `rv32ui-p-*` riscv-tests pass on `createTestBoard` in `pnpm test`,
+including `ma_data` (misaligned accesses) and `fence_i` (self-modifying code).
+The upstream riscv-tests revision is `3df703cd52d5f0d8224e3c50bf03c6cb70efff98`
+(env revision `6de71edb142be36319e380ce782c3d1830c65d68`); see
+[fixture provenance](../tests/fixtures/riscv-tests/README.md).
+Each test must report HTIF exit code 0 within 1,000,000 instruction attempts.
+This verifies the pinned `rv32ui-p` suite; other suites and signature-based
+riscv-arch-test are not covered.
+
+## Instructions
+
 | Group            | Implemented instructions                                               | Notes                                                                                                   |
 | ---------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
 | Upper immediates | `lui`, `auipc`                                                         | Results wrap to 32 bits.                                                                                |
