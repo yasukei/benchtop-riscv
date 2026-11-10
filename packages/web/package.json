@@ -26,6 +26,7 @@
     "@benchtop-riscv/core": "workspace:*",
     "@benchtop-riscv/elf": "workspace:*",
     "@benchtop-riscv/machine": "workspace:*",
+    "@benchtop-riscv/riscv": "workspace:*",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },

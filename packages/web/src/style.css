@@ -24,3 +24,68 @@ body {
     --text: #e6ebf2;
   }
 }
+
+.panel {
+  margin-block: 20px;
+  padding: 20px;
+  border: 1px solid #7d8da3;
+  border-radius: 8px;
+}
+h1,
+h2 {
+  margin-top: 0;
+}
+h2 {
+  font-size: 1.1rem;
+}
+input[type="file"] {
+  display: block;
+  margin-block: 10px;
+  max-width: 100%;
+  font: inherit;
+}
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+button {
+  padding: 8px 18px;
+  font: inherit;
+  cursor: pointer;
+}
+button:disabled {
+  cursor: default;
+}
+code,
+output[aria-label="instret"],
+table {
+  font-family: ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+table {
+  width: min(100%, 640px);
+  border-collapse: collapse;
+  text-align: left;
+}
+th,
+td {
+  padding: 5px 8px;
+  border-bottom: 1px solid #7d8da3;
+}
+.changed {
+  background: #fbe9a5;
+  color: #342800;
+}
+.change-marker {
+  font-size: 0.7em;
+}
+[role="alert"] {
+  border-left: 4px solid #e75050;
+  padding-left: 12px;
+  overflow-wrap: anywhere;
+}
