@@ -109,6 +109,9 @@ importers:
       '@benchtop-riscv/machine':
         specifier: workspace:*
         version: link:../machine
+      '@benchtop-riscv/riscv':
+        specifier: workspace:*
+        version: link:../riscv
       react:
         specifier: ^19.3.1
         version: 19.3.1
