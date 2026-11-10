@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import process from "node:process";
 import { parseElf } from "@benchtop-riscv/elf";
 import { createTestBoard } from "@benchtop-riscv/machine";
@@ -78,7 +79,7 @@ export function runElf(
 
 if (import.meta.main) {
   process.exitCode = runElf(process.argv.slice(2), {
-    readFile: (path) => readFileSync(path),
+    readFile: (path) => readFileSync(resolve(process.env.INIT_CWD ?? process.cwd(), path)),
     stdout: (text) => {
       process.stdout.write(text);
     },

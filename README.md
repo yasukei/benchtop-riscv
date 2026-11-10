@@ -43,6 +43,7 @@ pnpm run:elf path/to/program.elf --max-instructions 1000000
 
 This builds the machine and its dependencies, then runs the ELF on the test board
 (RAM at `0x80000000`, 16 MiB). Node runs the TypeScript CLI directly; no loader is needed.
+Relative ELF paths are resolved from the directory where you invoke the command.
 The default limit is 100,000,000 instruction attempts, including traps that do not retire
 an instruction. The report shows the stop reason, retired instruction count (`instret`),
 and final PC with disassembly from current RAM (`<unreadable>` outside aligned RAM words).
