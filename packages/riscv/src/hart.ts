@@ -1,14 +1,17 @@
 import { BusError } from "@benchtop-riscv/core";
 import type { AccessSize, Bus, RamWindow, StopReason } from "@benchtop-riscv/core";
 import * as f from "./fields.js";
+import { Csrs, Trap } from "./csrs.js";
 
 const budgetStop: StopReason = { kind: "budget" };
 
-/** RV32I interpreter. A successful step returns `budget` after one retired instruction. */
+/** RV32I interpreter with minimal M/U privilege and synchronous trap delivery. */
 export class Hart {
   readonly x = new Int32Array(32);
   pc = 0;
   instret = 0;
+  private privilege: 0 | 3 = 3;
+  private readonly csrs = new Csrs();
 
   constructor(
     private readonly bus: Bus,
@@ -19,6 +22,8 @@ export class Hart {
     this.x.fill(0);
     this.pc = pc >>> 0;
     this.instret = 0;
+    this.privilege = 3;
+    this.csrs.reset();
   }
 
   /** The budget counts attempts, including instructions that fail without retiring. */
@@ -36,12 +41,18 @@ export class Hart {
   step(): StopReason {
     this.x[0] = 0;
     this.pc >>>= 0;
-    if ((this.pc & 3) !== 0) return this.fatal("Misaligned instruction address");
+    let fetching = true;
     try {
-      return this.execute(this.load(this.pc, 4));
+      if ((this.pc & 3) !== 0) throw new Trap(0, this.pc);
+      const word = this.load(this.pc, 4);
+      fetching = false;
+      return this.execute(word);
     } catch (error) {
-      if (error instanceof BusError) return this.fatal(error.message);
-      throw error;
+      if (error instanceof Trap) this.enterTrap(error.cause, error.value);
+      else if (error instanceof BusError) {
+        this.enterTrap(fetching ? 1 : error.access === "load" ? 5 : 7, error.address);
+      } else throw error;
+      return budgetStop;
     }
   }
 
@@ -209,14 +220,26 @@ export class Hart {
         writesRd = false;
         break;
       case 0x73:
-        if (word === 0x00000073) return this.fatal("ecall");
-        if (word === 0x00100073) return this.fatal("ebreak");
+        if (funct3 !== 0) {
+          value = this.executeCsr(word);
+          break;
+        }
+        writesRd = false;
+        if (word === 0x00000073) throw new Trap(this.privilege === 0 ? 8 : 11, 0);
+        if (word === 0x00100073) throw new Trap(3, this.pc);
+        if (word === 0x30200073 && this.privilege === 3) {
+          this.privilege = (this.csrs.mstatus & 0x1800) === 0x1800 ? 3 : 0;
+          this.csrs.mstatus = ((this.csrs.mstatus & 0x80) >>> 4) | 0x80;
+          next = this.csrs.mepc;
+          break;
+        }
+        if (word === 0x10500073 && this.privilege === 3) break;
         return this.illegal(word);
       default:
         return this.illegal(word);
     }
     // Check before committing a jump's link register or retiring the instruction.
-    if ((next & 3) !== 0) return this.fatal("Misaligned instruction target");
+    if ((next & 3) !== 0) throw new Trap(0, next);
     if (writesRd && rd !== 0) this.x[rd] = value | 0;
     this.pc = next;
     this.instret++;
@@ -252,14 +275,41 @@ export class Hart {
     this.bus.store(address, size, value >>> 0);
   }
 
-  private illegal(word: number): StopReason {
-    return this.fatal(`Illegal instruction 0x${(word >>> 0).toString(16).padStart(8, "0")}`);
+  private executeCsr(word: number): number {
+    const address = f.csr(word);
+    const funct3 = f.funct3(word);
+    const operation = funct3 & 3;
+    if (operation === 0 || this.privilege < ((address >>> 8) & 3)) {
+      return this.illegal(word);
+    }
+    const source = f.rs1(word);
+    const value = funct3 >= 5 ? source : this.x[source]!;
+    // The encoded source, not its register value, controls write suppression.
+    const writes = operation === 1 || source !== 0;
+    if (writes && address >>> 10 === 3) return this.illegal(word);
+    // Validate existence even when CSRRW suppresses the architectural read (rd=x0).
+    // These minimal CSRs have no read side effects.
+    const old = this.csrs.read(address);
+    if (old === undefined) return this.illegal(word);
+    if (writes) {
+      this.csrs.write(
+        address,
+        operation === 1 ? value : operation === 2 ? old | value : old & ~value,
+      );
+    }
+    return operation === 1 && f.rd(word) === 0 ? 0 : old;
   }
 
-  private fatal(message: string): StopReason {
-    return {
-      kind: "fatal",
-      message: `${message} at PC 0x${this.pc.toString(16).padStart(8, "0")}`,
-    };
+  private enterTrap(cause: number, value: number): void {
+    this.csrs.mepc = (this.pc & ~3) >>> 0;
+    this.csrs.mcause = cause;
+    this.csrs.mtval = value >>> 0;
+    this.csrs.mstatus = ((this.csrs.mstatus & 8) << 4) | (this.privilege << 11);
+    this.privilege = 3;
+    this.pc = this.csrs.mtvec;
+  }
+
+  private illegal(word: number): never {
+    throw new Trap(2, word >>> 0);
   }
 }

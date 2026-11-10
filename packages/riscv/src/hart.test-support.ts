@@ -46,3 +46,23 @@ export function program(words: readonly number[], direct = true, windowSize = 19
   hart.reset(bus.base);
   return { hart, bus };
 }
+
+/** Read trap CSRs through guest instructions after checking the trap-entry state. */
+export function readTrapState(hart: Hart, bus: FakeBus) {
+  const addresses = [0x341, 0x342, 0x343, 0x300];
+  addresses.forEach((csr, index) => {
+    bus.view.setUint32(
+      448 + index * 4,
+      (csr * 2 ** 20 + 2 * 2 ** 12 + (28 + index) * 2 ** 7 + 0x73) >>> 0,
+      true,
+    );
+  });
+  hart.pc = bus.base + 448;
+  hart.run(4);
+  return {
+    mepc: hart.x[28]! >>> 0,
+    mcause: hart.x[29]! >>> 0,
+    mtval: hart.x[30]! >>> 0,
+    mstatus: hart.x[31]! >>> 0,
+  };
+}
