@@ -32,8 +32,14 @@ Design decisions are recorded in `docs/adr/` (overview: `docs/architecture.md`).
 - `pnpm lint` – ESLint, dependency direction (dependency-cruiser), Prettier check
 - `pnpm test` – unit and conformance tests (Vitest)
 - `pnpm test:coverage` – unit and conformance tests with V8 coverage
-- `pnpm test:e2e` – end-to-end tests (Playwright, Chromium)
-- `pnpm test:e2e:pages` – smoke tests against the GitHub Pages build under `/benchtop-riscv/`
+- `pnpm test:e2e` – end-to-end tests (Playwright, Chromium) on port 14173 by default.
+  Set `E2E_PORT` to override it.
+- `pnpm test:e2e:pages` – GitHub Pages smoke tests under `/benchtop-riscv/` on port 14174 by default.
+  Set `E2E_PAGES_PORT` to override it.
+
+Both commands accept port numbers from 1 to 65535. By default, they fail if the selected port is in use.
+Set `PW_REUSE_SERVER=1` locally to reuse a matching benchtop-riscv preview that is already running
+on the selected port. CI always starts its own preview.
 
 ## Conventions
 
