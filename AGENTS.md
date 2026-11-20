@@ -39,8 +39,8 @@ Design decisions are recorded in `docs/adr/` (overview: `docs/architecture.md`).
 
 Both commands accept port numbers from 1 to 65535. By default, they fail if the selected port is in use.
 Set `PW_REUSE_SERVER=1` locally after confirming that the configured URL serves the benchtop-riscv
-preview you want to reuse. Playwright decides whether to reuse the server using the URL's HTTP status
-alone. CI disables reuse.
+preview you want to reuse. Playwright checks server availability using HTTP status codes. CI disables
+reuse.
 
 ## Conventions
 
