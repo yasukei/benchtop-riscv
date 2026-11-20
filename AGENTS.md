@@ -38,8 +38,9 @@ Design decisions are recorded in `docs/adr/` (overview: `docs/architecture.md`).
   Set `E2E_PAGES_PORT` to override it.
 
 Both commands accept port numbers from 1 to 65535. By default, they fail if the selected port is in use.
-Set `PW_REUSE_SERVER=1` locally to reuse a matching benchtop-riscv preview that is already running
-on the selected port. CI always starts its own preview.
+Set `PW_REUSE_SERVER=1` locally after confirming that the configured URL serves the benchtop-riscv
+preview you want to reuse. Playwright decides whether to reuse the server using the URL's HTTP status
+alone. CI disables reuse.
 
 ## Conventions
 
