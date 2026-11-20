@@ -23,8 +23,4 @@ Until 1.0.0, any release may break compatibility.
 - Physical address bus and little-endian RAM with a direct-access window for the hart.
 - Web app shell that starts the machine Worker and shows its connection status.
 
-### Changed
-
-- Playwright suites use configurable preview ports and require local opt-in to reuse a running server.
-
 [Unreleased]: https://github.com/yasukei/benchtop-riscv/commits/main
