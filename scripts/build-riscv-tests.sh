@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Regenerate committed fixtures, never invoked by CI. See ADR 0005.
+# Regenerate committed fixtures. CI uses the committed copies (ADR 0005).
+# The tooling test checks for a missing runtime and exits before fetching sources.
 set -euo pipefail
 export LC_ALL=C TZ=UTC
 umask 022
