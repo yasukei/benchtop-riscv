@@ -25,7 +25,11 @@ for suite in "$@"; do
   esac
 done
 runtime=${CONTAINER_RUNTIME:-docker}
-command -v "$runtime" >/dev/null
+if ! command -v -- "$runtime" >/dev/null; then
+  printf 'Container runtime "%s" not found. Set CONTAINER_RUNTIME to an installed runtime.\n' \
+    "$runtime" >&2
+  exit 1
+fi
 staging=$(mktemp -d)
 source_tree="$staging/source"
 artifacts="$staging/fixtures"
@@ -68,9 +72,10 @@ printf 'deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/%s 
   "$SNAPSHOT" >> /etc/apt/sources.list
 printf 'deb [check-valid-until=no] http://snapshot.debian.org/archive/debian-security/%s bookworm-security main\n' \
   "$SNAPSHOT" >> /etc/apt/sources.list
-apt-get -o APT::Update::Error-Mode=any update
+# Keep APT and the build recipes from reading the script on stdin.
+apt-get -o APT::Update::Error-Mode=any update </dev/null
 apt-get install -y --no-install-recommends make \
-  gcc-riscv64-unknown-elf binutils-riscv64-unknown-elf
+  gcc-riscv64-unknown-elf binutils-riscv64-unknown-elf </dev/null
 
 # Upstream make writes next to its sources. Build a private writable copy while
 # the host checkout stays mounted read-only (no host .git data is needed).
@@ -103,7 +108,7 @@ MAKE
   # Stable intermediate object names also stabilize STT_FILE symbol table entries.
   make --no-print-directory XLEN=32 RISCV_PREFIX=riscv64-unknown-elf- \
     'RISCV_GCC_OPTS=-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -march=rv32g_zicsr_zifencei -mabi=ilp32 -save-temps=obj -Wl,--build-id=none' \
-    "${dumps[@]}"
+    "${dumps[@]}" </dev/null
   cp "${tests[@]}" "${dumps[@]}" /fixtures/
 done
 CONTAINER

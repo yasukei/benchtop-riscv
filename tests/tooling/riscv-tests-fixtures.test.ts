@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -6,6 +7,21 @@ const fixtures = resolve(import.meta.dirname, "../fixtures/riscv-tests");
 const files = readdirSync(fixtures);
 const read = (name: string) => readFileSync(resolve(fixtures, name), "utf8");
 const readme = read("README.md");
+
+describe("riscv-tests fixture builder", () => {
+  it("reports a missing container runtime on stderr", () => {
+    const builder = resolve(import.meta.dirname, "../../scripts/build-riscv-tests.sh");
+    const runtime = "does-not-exist";
+    const result = spawnSync("bash", [builder], {
+      encoding: "utf8",
+      env: { ...process.env, CONTAINER_RUNTIME: runtime },
+    });
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(runtime);
+    expect(result.stderr).toContain("CONTAINER_RUNTIME");
+  });
+});
 
 describe("committed riscv-tests fixtures", () => {
   it("contains exactly the upstream rv32ui p list, with a dump and README entry for each", () => {
