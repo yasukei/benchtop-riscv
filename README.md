@@ -24,8 +24,15 @@ Other scripts:
 - `pnpm format` – format all files with Prettier
 - `pnpm test:coverage` – unit and conformance tests with V8 coverage; open
   `coverage/index.html` for the HTML report
-- `pnpm test:e2e` – end-to-end tests (Playwright); run for UI changes
-- `pnpm test:e2e:pages` – smoke tests against the GitHub Pages build under `/benchtop-riscv/`
+- `pnpm test:e2e` – end-to-end tests (Playwright) for UI changes, on port 14173 by default.
+  Set `E2E_PORT` to override it.
+- `pnpm test:e2e:pages` – GitHub Pages smoke tests under `/benchtop-riscv/` on port 14174 by default.
+  Set `E2E_PAGES_PORT` to override it.
+
+Both commands accept port numbers from 1 to 65535. By default, they fail if the selected port is in use.
+Set `PW_REUSE_SERVER=1` locally after confirming that the configured URL serves the benchtop-riscv
+preview you want to reuse. Playwright checks server availability using HTTP status codes. CI disables
+reuse.
 
 Before the first e2e run, install the browser matching the locked Playwright version:
 

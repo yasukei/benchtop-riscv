@@ -1,30 +1,17 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig } from "@playwright/test";
+import { base, readPort, reuseExistingServer } from "./playwright.shared.js";
 
-export default defineConfig({
-  testDir: "./packages/web/e2e",
-  fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  reporter: [["list"], ["html", { open: "never" }]],
-  use: {
-    baseURL: "http://127.0.0.1:4173",
-    trace: "retain-on-failure",
-  },
-  projects: [
-    {
-      name: "chromium",
-      use: {
-        ...devices["Desktop Chrome"],
-        launchOptions: { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH },
-      },
-    },
-  ],
+const port = readPort("E2E_PORT", 14173);
+const url = `http://127.0.0.1:${port}`;
+
+export default defineConfig(base, {
+  use: { baseURL: url },
   webServer: {
     // CI builds in an earlier step; local runs build before starting preview.
     command:
       (process.env.CI ? "" : "pnpm build && ") +
-      "pnpm --filter @benchtop-riscv/web preview --host 127.0.0.1 --port 4173 --strictPort",
-    url: "http://127.0.0.1:4173",
-    reuseExistingServer: !process.env.CI,
+      `pnpm --filter @benchtop-riscv/web preview --host 127.0.0.1 --port ${port} --strictPort`,
+    url,
+    reuseExistingServer,
   },
 });
